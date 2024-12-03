@@ -6,7 +6,6 @@ import random
 
 LOGGER = get_logger(__name__)
 
-
 # Função para sortear um nome que não seja o seu e remover o sorteado da lista
 def sortear_nome(participantes, meu_nome):
     # Remover o seu nome da lista de opções para o sorteio
@@ -22,11 +21,10 @@ def sortear_nome(participantes, meu_nome):
 
 # Interface com Streamlit
 def app():
-    # Iniciar a sessão de estado se não existir
+    # Inicializando a lista de participantes no estado da sessão
     if "participantes" not in st.session_state:
         st.session_state.participantes = []
     
-    # Título da aplicação
     st.title("Sorteio de Amigo Secreto")
     
     # Entrada do nome do usuário
@@ -41,13 +39,14 @@ def app():
     else:
         participantes = st.session_state.participantes
 
+    # Atualizando a lista de participantes no estado da sessão
+    if lista_participantes:
+        st.session_state.participantes = participantes
+
     if meu_nome:
         if meu_nome not in participantes:
             st.error(f"Seu nome ({meu_nome}) não está na lista de participantes!")
         else:
-            # Armazenando os participantes no estado da sessão
-            st.session_state.participantes = participantes
-            
             # Botão para realizar o sorteio
             if st.button("Sortear Amigo Secreto"):
                 if len(participantes) > 1:
