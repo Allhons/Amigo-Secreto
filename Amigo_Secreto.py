@@ -7,23 +7,6 @@ import random
 LOGGER = get_logger(__name__)
 
 
-Participantes = [
-    'Allyson',
-    'Luana',
-    'Veronica',
-    'Adilson',
-    'Lara Ohana',
-    'Clarice',
-    'Cecilia',
-    'Maura',
-    'Tuca',
-    'Matheus',
-    'Marina',
-    'Lara',
-    'Kaio',
-    'Eloa'
-]
-    
 # Função para sortear um nome que não seja o seu e remover o sorteado da lista
 def sortear_nome(participantes, meu_nome):
     # Remover o seu nome da lista de opções para o sorteio
@@ -39,6 +22,11 @@ def sortear_nome(participantes, meu_nome):
 
 # Interface com Streamlit
 def app():
+    # Iniciar a sessão de estado se não existir
+    if "participantes" not in st.session_state:
+        st.session_state.participantes = []
+    
+    # Título da aplicação
     st.title("Sorteio de Amigo Secreto")
     
     # Entrada do nome do usuário
@@ -48,18 +36,31 @@ def app():
     lista_participantes = st.text_area("Lista de participantes (separados por vírgula)", "Allyson, Luana, Veronica, Adilson, Lara Ohana, Clarice, Cecilia, Maura, Tuca,Matheus, Marina, Lara, Kaio, Eloa")
     
     # Convertendo a lista de participantes em uma lista Python
-    participantes = [p.strip() for p in lista_participantes.split(",")]
+    if lista_participantes:
+        participantes = [p.strip() for p in lista_participantes.split(",")]
+    else:
+        participantes = st.session_state.participantes
 
     if meu_nome:
         if meu_nome not in participantes:
             st.error(f"Seu nome ({meu_nome}) não está na lista de participantes!")
         else:
+            # Armazenando os participantes no estado da sessão
+            st.session_state.participantes = participantes
+            
             # Botão para realizar o sorteio
             if st.button("Sortear Amigo Secreto"):
-                # Sorteando o nome
-                nome_sorteado, participantes = sortear_nome(participantes, meu_nome)
-                st.success(f"O nome sorteado para você ({meu_nome}) é: {nome_sorteado}")
-                st.write(f"Participantes restantes: {', '.join(participantes)}")
+                if len(participantes) > 1:
+                    # Sorteando o nome
+                    nome_sorteado, participantes = sortear_nome(participantes, meu_nome)
+                    
+                    # Atualizando os participantes no estado da sessão
+                    st.session_state.participantes = participantes
+                    
+                    st.success(f"O nome sorteado para você ({meu_nome}) é: {nome_sorteado}")
+                    st.write(f"Participantes restantes: {', '.join(participantes)}")
+                else:
+                    st.warning("Não há participantes suficientes para sortear!")
 
 # Rodando a aplicação
 if __name__ == "__main__":
