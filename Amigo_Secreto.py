@@ -1,6 +1,5 @@
 import random
 import streamlit as st
-from firebase_admin import credentials, db
 
 # Inicializando o Firebase Admin SDK
 cred = credentials.Certificate('amigo-secreto-allyson-firebase-adminsdk-6om81-0a783864d5.json')
