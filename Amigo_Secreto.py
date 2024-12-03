@@ -1,10 +1,8 @@
-import pandas as pd
 import streamlit as st
-import plotly.express as px
 import pandas as pd
 from streamlit.logger import get_logger
 import random
-import time
+
 
 LOGGER = get_logger(__name__)
 
