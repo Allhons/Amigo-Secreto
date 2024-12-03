@@ -1,10 +1,13 @@
-import streamlit as st
-import pandas as pd
-from streamlit.logger import get_logger
 import random
+import streamlit as st
+import firebase_admin
+from firebase_admin import credentials, db
 
-
-LOGGER = get_logger(__name__)
+# Inicializando o Firebase Admin SDK
+cred = credentials.Certificate('amigo-secreto-allyson-firebase-adminsdk-6om81-0a783864d5.json')
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://amigo-secreto-allyson-default-rtdb.firebaseio.com'
+})
 
 # Função para sortear um nome que não seja o seu e remover o sorteado da lista
 def sortear_nome(participantes, meu_nome):
@@ -19,29 +22,38 @@ def sortear_nome(participantes, meu_nome):
     
     return nome_sorteado, participantes
 
+# Função para obter a lista de participantes do Firebase
+def obter_participantes():
+    ref = db.reference('participantes')
+    participantes = ref.get()
+    if not participantes:
+        return []
+    return participantes
+
+# Função para atualizar a lista de participantes no Firebase
+def atualizar_participantes(participantes):
+    ref = db.reference('participantes')
+    ref.set(participantes)
+
 # Interface com Streamlit
 def app():
-    # Inicializando a lista de participantes no estado da sessão
-    if "participantes" not in st.session_state:
-        st.session_state.participantes = []
-    
     st.title("Sorteio de Amigo Secreto")
+
+    # Obtendo e mostrando a lista de participantes armazenada no Firebase
+    participantes = obter_participantes()
+    
+    if not participantes:
+        st.warning("Nenhum participante foi adicionado ainda.")
     
     # Entrada do nome do usuário
     meu_nome = st.text_input("Qual o seu nome?")
-    
-    # Entrada da lista de participantes
-    lista_participantes = st.text_area("Lista de participantes (separados por vírgula)", "Allyson, Luana, Veronica, Adilson, Lara Ohana, Clarice, Cecilia, Maura, Tuca,Matheus, Marina, Lara, Kaio, Eloa")
-    
-    # Convertendo a lista de participantes em uma lista Python
+
+    # Entrada da lista de participantes, se necessário
+    lista_participantes = st.text_area("Lista de participantes (separados por vírgula)", ", ".join(participantes))
+
     if lista_participantes:
         participantes = [p.strip() for p in lista_participantes.split(",")]
-    else:
-        participantes = st.session_state.participantes
-
-    # Atualizando a lista de participantes no estado da sessão
-    if lista_participantes:
-        st.session_state.participantes = participantes
+        atualizar_participantes(participantes)  # Atualiza a lista no Firebase
 
     if meu_nome:
         if meu_nome not in participantes:
@@ -52,9 +64,9 @@ def app():
                 if len(participantes) > 1:
                     # Sorteando o nome
                     nome_sorteado, participantes = sortear_nome(participantes, meu_nome)
-                    
-                    # Atualizando os participantes no estado da sessão
-                    st.session_state.participantes = participantes
+
+                    # Atualizando a lista de participantes no Firebase
+                    atualizar_participantes(participantes)
                     
                     st.success(f"O nome sorteado para você ({meu_nome}) é: {nome_sorteado}")
                     st.write(f"Participantes restantes: {', '.join(participantes)}")
